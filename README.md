@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🤖 AURA — Multi-Agent AI Platform
+# AURA — Multi-Agent AI Platform
 
 ### Autonomous AI Business Operations Assistant
 **A Multi-Agent AI Employee Platform for Enterprise Automation**
@@ -15,7 +15,7 @@
 
 ---
 
-## 📌 Overview
+## Overview
 
 **AURA** is an autonomous, **multi-agent AI platform** that behaves like a
 complete digital business team rather than a single chatbot. A company gives it
@@ -31,61 +31,61 @@ Its defining differentiator is a **Verification / Critic Agent** that fact-check
 claims, validates calculations, and flags hallucinations before anything reaches
 the user — a capability most AI projects omit.
 
-> **In one line:** Give AURA a goal → get a boardroom-ready, self-verified strategy report.
+> **In one line:** Give AURA a goal, get a boardroom-ready, self-verified strategy report.
 
 ---
 
-## 🧠 System Architecture
+## System Architecture
 
 ```
                           User Goal
-                             │
-                             ▼
-                  ┌────────────────────────┐
-                  │   AI Project Manager    │
-                  │        Agent            │
-                  └────────────────────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
- ┌────────────┐      ┌────────────┐       ┌────────────┐
- │  Research  │      │    Data    │       │  Document  │
- │   Agent    │      │   Agent    │       │   Agent    │
- └────────────┘      └────────────┘       └────────────┘
-        │                    │                    │
-        ▼                    ▼                    ▼
+                             |
+                             v
+                  +------------------------+
+                  |   AI Project Manager    |
+                  |        Agent            |
+                  +------------------------+
+                             |
+        +--------------------+--------------------+
+        |                    |                    |
+        v                    v                    v
+ +------------+      +------------+       +------------+
+ |  Research  |      |    Data    |       |  Document  |
+ |   Agent    |      |   Agent    |       |   Agent    |
+ +------------+      +------------+       +------------+
+        |                    |                    |
+        v                    v                    v
    Web Search          Excel / DB            PDF Reports
-        │                    │                    │
-        └────────────────────┼────────────────────┘
-                             ▼
-                  ┌────────────────────────┐
-                  │   Verification Agent    │
-                  └────────────────────────┘
-                             │
-                             ▼
-                  ┌────────────────────────┐
-                  │   Executive Report      │
-                  │   + Recommendations     │
-                  └────────────────────────┘
+        |                    |                    |
+        +--------------------+--------------------+
+                             v
+                  +------------------------+
+                  |   Verification Agent    |
+                  +------------------------+
+                             |
+                             v
+                  +------------------------+
+                  |   Executive Report      |
+                  |   + Recommendations     |
+                  +------------------------+
 ```
 
 ---
 
-## ✨ The Agents
+## The Agents
 
 | Agent | Role | Tools | Output |
 |-------|------|-------|--------|
-| 🧭 **Manager** | Plans, delegates, monitors, merges results | Planner, Memory | Task plan & final assembly |
-| 🔎 **Research** | Collects live external facts | Search API, Browser, RAG | Verified facts + sources |
-| 📊 **Data Analyst** | Analyzes Excel / CSV / databases | Pandas, Charts, DB | Insights & visualizations |
-| 📄 **Document Intelligence** | Reads & reasons over documents | RAG, Vector DB | Answers & summaries |
-| ✅ **Verification / Critic** | Validates correctness & sources | Cross-checking, math checks | Pass/fail + corrections |
-| 📝 **Report Generation** | Produces the final deliverable | PDF / Doc builder | Executive report |
+| **Manager** | Plans, delegates, monitors, merges results | Planner, Memory | Task plan & final assembly |
+| **Research** | Collects live external facts | Search API, Browser, RAG | Verified facts + sources |
+| **Data Analyst** | Analyzes Excel / CSV / databases | Pandas, Charts, DB | Insights & visualizations |
+| **Document Intelligence** | Reads & reasons over documents | RAG, Vector DB | Answers & summaries |
+| **Verification / Critic** | Validates correctness & sources | Cross-checking, math checks | Pass/fail + corrections |
+| **Report Generation** | Produces the final deliverable | PDF / Doc builder | Executive report |
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technologies |
 |-------|-------------|
@@ -97,11 +97,11 @@ the user — a capability most AI projects omit.
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 multi-agent/
-│
+|
 ├── agents/                # AI agents
 │   ├── manager/           #   Orchestration & planning
 │   ├── researcher/        #   Web research agent
@@ -119,13 +119,13 @@ multi-agent/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-> ⚠️ The project is in active development. These are the intended setup steps.
+> The project is in active development. These are the intended setup steps.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/multi-agent.git
+git clone https://github.com/fadil013/multi-agent.git
 cd multi-agent
 
 # 2. Create a virtual environment
@@ -144,24 +144,29 @@ uvicorn backend.main:app --reload
 
 ---
 
-## 👥 Team & Responsibilities
+## Team & Workflow
 
-| Intern | Role | Owns |
-|--------|------|------|
-| **Intern 1** | Agent Architecture Engineer | `agents/` — manager, planner, memory, workflow |
-| **Intern 2** | RAG + Knowledge Engineer | `rag/` — embeddings, vector DB, retrieval |
-| **Intern 3** | Tool Integration + Data Agent Engineer | `tools/` — search, data, database, analytics |
-| **Intern 4** | Backend + Product Engineer | `backend/`, `frontend/`, `deployment/` |
+Development is split across **three tracks**, each owned by one team member on a
+dedicated branch. All work is merged into `main` through pull requests.
+
+| Track | Branch | Owns |
+|-------|--------|------|
+| Agent Architecture | `dev/agents` | `agents/` |
+| Knowledge & Tools | `dev/rag-tools` | `rag/`, `tools/` |
+| Backend & Product | `dev/product` | `backend/`, `frontend/`, `deployment/` |
+
+**New to the team? Read [`WORKFLOW.md`](./WORKFLOW.md)** — it explains exactly how
+to clone, work on your branch, push, and open pull requests.
 
 ---
 
-## 🗓️ Roadmap (8 Weeks)
+## Roadmap (8 Weeks)
 
 | Week | Focus |
 |------|-------|
 | 1 | Research, architecture, setup, API/model selection |
 | 2 | Build foundations (manager agent, RAG, tools, backend skeleton) |
-| 3 | Connect the pipeline → **first working prototype** |
+| 3 | Connect the pipeline — first working prototype |
 | 4 | Add intelligence (memory, better retrieval, planning, error handling) |
 | 5 | Enterprise features (accounts, history, multi-doc, multi-task) |
 | 6 | Testing (scenarios, success metrics) |
@@ -170,14 +175,14 @@ uvicorn backend.main:app --reload
 
 ---
 
-## 📄 Full Report
+## Full Report
 
 The complete technical & product report is available here:
 **[`AURA_Project_Report.md`](./AURA_Project_Report.md)**
 
 ---
 
-## 📜 License
+## License
 
 Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for details.
 

@@ -415,12 +415,12 @@ Goal: the first end-to-end working prototype.
 **Measured on:** task success rate, response quality, agent error rate.
 
 **Week 8 — Final delivery**
-- ✅ GitHub repository
-- ✅ Research-paper-style report
-- ✅ Demo video
-- ✅ Presentation
-- ✅ Live deployment
-- ✅ Architecture diagram
+- GitHub repository
+- Research-paper-style report
+- Demo video
+- Presentation
+- Live deployment
+- Architecture diagram
 
 ---
 
@@ -510,12 +510,12 @@ AURA's quality is measured objectively, not anecdotally.
 
 By the end of Week 8, the team delivers a complete, defensible FYP package:
 
-- ✅ **GitHub repository** — full, documented source code
-- ✅ **Research-paper-style report** — this document, expanded with results
-- ✅ **Demo video** — the end-to-end scenario in action
-- ✅ **Presentation** — slide deck for the FYP defense
-- ✅ **Live deployment** — a working, accessible instance
-- ✅ **Architecture diagram** — the system design at a glance
+- **GitHub repository** — full, documented source code
+- **Research-paper-style report** — this document, expanded with results
+- **Demo video** — the end-to-end scenario in action
+- **Presentation** — slide deck for the FYP defense
+- **Live deployment** — a working, accessible instance
+- **Architecture diagram** — the system design at a glance
 
 ---
 
