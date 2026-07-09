@@ -1,0 +1,62 @@
+# ============================================================
+#  AURA — Python Dependencies
+#  Pin exact versions once the stack is finalized.
+# ============================================================
+
+# ---- Agent orchestration ----
+langgraph
+langchain
+langchain-community
+langchain-openai
+crewai
+# autogen-agentchat        # optional alternative to CrewAI
+
+# ---- LLM providers ----
+openai
+anthropic
+
+# ---- RAG / Knowledge ----
+chromadb
+faiss-cpu
+sentence-transformers
+tiktoken
+pypdf
+unstructured
+
+# ---- Data analysis ----
+pandas
+numpy
+openpyxl                    # Excel support
+matplotlib
+plotly
+
+# ---- Web research ----
+tavily-python
+requests
+beautifulsoup4
+
+# ---- Backend ----
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+psycopg2-binary
+redis
+python-jose[cryptography]   # JWT auth
+passlib[bcrypt]
+python-multipart            # file uploads
+
+# ---- Reporting ----
+reportlab                   # PDF generation
+jinja2
+
+# ---- MLOps ----
+mlflow
+python-dotenv
+
+# ---- Dev / testing ----
+pytest
+pytest-asyncio
+black
+ruff
