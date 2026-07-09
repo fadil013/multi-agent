@@ -7,4 +7,4 @@ Containerization, CI/CD, and cloud deployment configuration.
 - GitHub Actions CI/CD workflows
 - Cloud deployment config
 
-> **Owner:** Intern 4 — Backend + Product Engineer
+> **Owner:** Ahmad (Backend + Product) — branch `ahmad/backend-tools`

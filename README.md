@@ -149,11 +149,11 @@ uvicorn backend.main:app --reload
 Development is split across **three tracks**, each owned by one team member on a
 dedicated branch. All work is merged into `main` through pull requests.
 
-| Track | Branch | Owns |
-|-------|--------|------|
-| Agent Architecture | `dev/agents` | `agents/` |
-| Knowledge & Tools | `dev/rag-tools` | `rag/`, `tools/` |
-| Backend & Product | `dev/product` | `backend/`, `frontend/`, `deployment/` |
+| Member | Branch | Owns |
+|--------|--------|------|
+| **Danish** | `danish/agents` | `agents/` |
+| **Manan** | `manan/rag` | `rag/` |
+| **Ahmad** | `ahmad/backend-tools` | `tools/`, `backend/`, `frontend/`, `deployment/`, `database/` |
 
 **New to the team? Read [`WORKFLOW.md`](./WORKFLOW.md)** — it explains exactly how
 to clone, work on your branch, push, and open pull requests.
