@@ -1,0 +1,44 @@
+# ============================================================
+#  AURA — Local development stack
+#  Backend + PostgreSQL + Redis
+#  (frontend can run separately during development)
+# ============================================================
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: aura-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  db:
+    image: postgres:16
+    container_name: aura-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aura
+      POSTGRES_PASSWORD: aura
+      POSTGRES_DB: aura
+    ports:
+      - "5432:5432"
+    volumes:
+      - aura_pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: aura-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  aura_pgdata:
