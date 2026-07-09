@@ -10,4 +10,4 @@ React (or Streamlit) UI for AURA.
 - Task progress
 - Report viewer
 
-> **Owner:** Intern 4 — Backend + Product Engineer
+> **Owner:** Ahmad (Backend + Product) — branch `ahmad/backend-tools`

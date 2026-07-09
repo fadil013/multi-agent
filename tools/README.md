@@ -8,4 +8,4 @@ The abilities AURA's agents can call.
 - `analytics.py` — pattern detection & chart generation
 - `database_tool.py` — query databases
 
-> **Owner:** Intern 3 — Tool Integration + Data Agent Engineer
+> **Owner:** Ahmad (Tools + Data) — branch `ahmad/backend-tools`

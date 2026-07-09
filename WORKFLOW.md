@@ -19,36 +19,36 @@ Read it once fully before you start.
 
 ---
 
-## 2. Who Does What
+## 2. Who Owns What
 
-| Person | Role | Responsibility |
-|--------|------|----------------|
-| **Owner (fadil013)** | Maintainer | Reviews Pull Requests, merges them into `main`, resolves conflicts, keeps `main` stable |
-| **Intern A** | Agent Architecture | Works on branch `dev/agents` → folder `agents/` |
-| **Intern B** | Knowledge & Tools | Works on branch `dev/rag-tools` → folders `rag/`, `tools/` |
-| **Intern C** | Backend & Product | Works on branch `dev/product` → folders `backend/`, `frontend/`, `deployment/` |
+| Person | Branch | Folders they own |
+|--------|--------|------------------|
+| **Owner — Fadil (fadil013)** | `main` | Reviews & merges every Pull Request, keeps `main` stable |
+| **Danish** — Agent Architecture | `danish/agents` | `agents/` |
+| **Manan** — RAG & Knowledge | `manan/rag` | `rag/` |
+| **Ahmad** — Tools + Backend/Product | `ahmad/backend-tools` | `tools/`, `backend/`, `frontend/`, `deployment/`, `database/` |
 
 ---
 
 ## 3. Branch Model
 
 ```
-                          main   (stable, protected — never commit here directly)
+                          main   (stable, protected - never commit here directly)
                            |
         +------------------+------------------+
         |                  |                  |
-   dev/agents        dev/rag-tools       dev/product
-   (Intern A)          (Intern B)         (Intern C)
+   danish/agents      manan/rag        ahmad/backend-tools
+     (Danish)          (Manan)             (Ahmad)
 ```
 
 - `main` — always working, always presentable. This is what gets graded/demoed.
-- `dev/*` — one long-lived branch per person. You build here, then open a PR.
+- `<name>/<area>` — one long-lived branch per person. Build here, then open a PR.
 
 ---
 
-## 4. One-Time Setup (each intern does this once)
+## 4. One-Time Setup (each person does this once)
 
-> First, the owner must add you as a **collaborator** (Settings → Collaborators).
+> First, the owner adds you as a **collaborator** (repo → Settings → Collaborators).
 > You'll get an email invite — accept it before continuing.
 
 ```bash
@@ -56,27 +56,31 @@ Read it once fully before you start.
 git clone https://github.com/fadil013/multi-agent.git
 cd multi-agent
 
-# 2. Switch to YOUR branch (example: Intern A)
-git checkout dev/agents
+# 2. Switch to YOUR branch
+git checkout danish/agents      # Danish
+# git checkout manan/rag        # Manan
+# git checkout ahmad/backend-tools   # Ahmad
 
 # 3. Confirm you're on the right branch
-git branch          # the one with a * is your current branch
+git branch                      # the one with a * is your current branch
 ```
 
-That's it — you now have the whole project locally and are on your own branch.
+You now have the whole project locally and are on your own branch.
 
 ---
 
-## 5. The Daily Workflow (each intern, every day)
+## 5. The Daily Workflow (each person, every day)
+
+Replace `<your-branch>` with your own (e.g. `danish/agents`).
 
 ```bash
 # 1. Make sure you're on your branch
-git checkout dev/agents
+git checkout <your-branch>
 
-# 2. Pull the latest official work into your branch, so you don't fall behind
+# 2. Pull the latest official work into your branch so you don't fall behind
 git pull origin main
 
-# 3. ... do your work: write code, edit files ...
+# 3. ... do your work: write code in YOUR folders ...
 
 # 4. Stage your changes
 git add -A
@@ -85,7 +89,7 @@ git add -A
 git commit -m "Add task planner to manager agent"
 
 # 6. Upload your branch to GitHub
-git push origin dev/agents
+git push origin <your-branch>
 ```
 
 Repeat steps 3–6 as often as you like. **Commit small and often.**
@@ -97,10 +101,9 @@ Repeat steps 3–6 as often as you like. **Commit small and often.**
 When a feature is finished and working:
 
 1. Push your branch (step 6 above).
-2. Go to the repo on GitHub → you'll see a **"Compare & pull request"** button.
-3. Open a **Pull Request** from `dev/agents` → `main`.
-4. Write a short description of what you built.
-5. The **owner reviews it**, and merges it into `main`.
+2. Open the repo on GitHub → click **"Compare & pull request"**.
+3. Open a **Pull Request** from your branch → `main`, and describe what you built.
+4. The **owner reviews it** and merges it into `main`.
 
 Once merged, everyone else picks it up next time they run `git pull origin main`.
 
@@ -109,17 +112,17 @@ Once merged, everyone else picks it up next time they run `git pull origin main`
 ## 7. What the Owner Does
 
 ```bash
-# Review pull requests on GitHub (Pull Requests tab)
-# - read the changes
-# - request fixes if needed
-# - click "Merge pull request" when it's good
+# Review pull requests on GitHub (Pull Requests tab):
+#   - read the changes
+#   - request fixes if needed
+#   - click "Merge pull request" when it's good
 
 # Keep your own copy of main current
 git checkout main
 git pull origin main
 ```
 
-The owner is the **gatekeeper of `main`**: nothing enters `main` without a merged PR.
+The owner is the **gatekeeper of `main`**: nothing enters without a merged PR.
 
 ---
 
@@ -127,24 +130,25 @@ The owner is the **gatekeeper of `main`**: nothing enters `main` without a merge
 
 A **conflict** happens when two people change the same lines. To minimise them:
 
-- **Each person owns their own folders** (see the table in §2). Stay in your lane.
+- **Everyone owns their own folders** (see §2). Stay in your lane.
 - **Pull `main` into your branch daily** (`git pull origin main`).
-- Communicate before touching shared files (e.g. `requirements.txt`, `docker-compose.yml`).
+- Communicate before touching shared files (`requirements.txt`,
+  `docker-compose.yml`, `.env.example`).
 
-If you hit a conflict, Git marks the file with `<<<<<<<` / `>>>>>>>`. Edit the file
-to keep the correct version, remove the markers, then:
+If you hit a conflict, Git marks the file with `<<<<<<<` / `>>>>>>>`. Edit the
+file to keep the correct version, remove the markers, then:
 
 ```bash
 git add -A
 git commit -m "Resolve merge conflict"
-git push origin dev/agents
+git push origin <your-branch>
 ```
 
 ---
 
 ## 9. Golden Rules
 
-1. **Never commit directly to `main`.** Always work on your `dev/*` branch.
+1. **Never commit directly to `main`.** Always work on your own branch.
 2. **Pull before you start** each session (`git pull origin main`).
 3. **Commit small, commit often**, with clear messages.
 4. **One Pull Request per feature** — keep them focused.
@@ -158,17 +162,17 @@ git push origin dev/agents
 | I want to... | Command |
 |--------------|---------|
 | Get the project the first time | `git clone https://github.com/fadil013/multi-agent.git` |
-| Switch to my branch | `git checkout dev/agents` |
+| Switch to my branch | `git checkout <your-branch>` |
 | See which branch I'm on | `git branch` |
 | Get everyone's latest work | `git pull origin main` |
 | Stage my changes | `git add -A` |
 | Save a snapshot | `git commit -m "message"` |
-| Upload my work | `git push origin dev/agents` |
+| Upload my work | `git push origin <your-branch>` |
 | See what changed | `git status` |
 | See history | `git log --oneline` |
 
 ---
 
-**Summary:** interns **push** to their own `dev/*` branch and open Pull Requests;
+**Summary:** each person **pushes** to their own branch and opens Pull Requests;
 the owner **reviews and merges** into `main`; everyone **pulls** `main` to stay in
 sync. `main` is always the clean, demo-ready version.

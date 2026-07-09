@@ -9,4 +9,4 @@ The specialized AI agents that make up the AURA workforce.
 | `analyst/` | Data Analyst Agent | Cleans data, finds patterns, generates insights |
 | `verifier/` | Verification / Critic Agent | Validates facts, sources, and calculations |
 
-> **Owner:** Intern 1 — Agent Architecture Engineer
+> **Owner:** Danish (Agent Architecture) — branch `danish/agents`

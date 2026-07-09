@@ -8,4 +8,4 @@ Makes AURA understand documents (PDFs, reports, research papers, company docs).
 - `vector_db.py` — FAISS / ChromaDB interface
 - `rag_pipeline.py` — chunking, retrieval, semantic search, citations
 
-> **Owner:** Intern 2 — RAG + Knowledge Engineer
+> **Owner:** Manan (RAG + Knowledge) — branch `manan/rag`
