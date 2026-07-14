@@ -95,3 +95,7 @@ temp/
 # ---- Uploads (user files) ----
 uploads/
 data/uploads/
+# ---- Test/debug scripts ----
+test_*.py
+*_test.py
+rag/test_*.py
