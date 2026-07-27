@@ -8,10 +8,17 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_groq import ChatGroq
 
 from agents.manager.memory import ProjectState
-from tools.data_agent import load_table, clean, generate_eda_summary, detect_anomalies
+from tools.data_agent import (
+    load_table,
+    clean,
+    generate_eda_summary,
+    detect_anomalies,
+    format_anomaly_table_for_pdf,
+)
 from tools.analytics import make_chart
 from tools.reporter import export_final_report, export_json_report
 from dotenv import load_dotenv
+
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
 
@@ -57,6 +64,10 @@ def analyst_node(state: ProjectState) -> dict:
         cleaned_df = clean(raw_df, use_knn_imputation=True)
         eda_stats = generate_eda_summary(cleaned_df)
         flagged_df, anomaly_summary = detect_anomalies(cleaned_df)
+
+        # Compact, PDF-safe version of the anomaly table — separate from the
+        # fuller anomaly_summary text used in the LLM prompt and JSON export.
+        anomaly_table_for_pdf = format_anomaly_table_for_pdf(flagged_df, max_rows=5)
     except Exception as e:
         error_msg = f"Data processing failure: {str(e)}"
         print(f"[Error] {error_msg}")
@@ -135,13 +146,18 @@ def analyst_node(state: ProjectState) -> dict:
         t3 = time.perf_counter()
         print(f"[Timing] Chart generation ({len(chart_suite)} charts): {t3 - t2:.2f}s")
 
-        full_stats_section = f"{eda_stats}\n\n{anomaly_summary}"
+        # Use the compact, column-limited table here instead of the raw
+        # anomaly_summary — this is what fixes the PDF wrapping/overlap issue.
+        full_stats_section = (
+            f"{eda_stats}\n\n"
+            f"=== Anomalous Rows (Key Columns) ===\n{anomaly_table_for_pdf}"
+        )
 
         exported_files.update(
             export_final_report(flagged_df, full_stats_section, analysis_output, chart_suite)
         )
 
-        # New: structured JSON export alongside the PDF
+        # JSON export keeps the fuller anomaly_summary text — no width constraints here
         exported_files.update(
             export_json_report(
                 task_description=task_description,

@@ -14,6 +14,8 @@ crewai
 # ---- LLM providers ----
 openai
 anthropic
+langchain-groq             # Added for Llama 3.3 support
+langchain-google-genai     # Added for Gemini support
 
 # ---- RAG / Knowledge ----
 chromadb
@@ -23,12 +25,14 @@ tiktoken
 pypdf
 unstructured
 
-# ---- Data analysis ----
+# ---- Data analysis & ML ----
 pandas
 numpy
 openpyxl                    # Excel support
 matplotlib
 plotly
+scikit-learn               # Added for KNN Imputation & Isolation Forest
+prophet                    # Added for Time-Series Forecasting
 
 # ---- Web research ----
 tavily-python
@@ -49,11 +53,12 @@ python-multipart            # file uploads
 
 # ---- Reporting ----
 reportlab                   # PDF generation
+fpdf2                      # Added for current Reporter engine
 jinja2
 
 # ---- MLOps ----
 mlflow
-python-dotenv
+python-dotenv              # Handles local API keys
 
 # ---- Dev / testing ----
 pytest

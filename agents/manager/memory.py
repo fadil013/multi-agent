@@ -13,6 +13,9 @@ class ProjectState(TypedDict):
     # The original goal given by the user
     user_objective: str
     
+    # ---> FIX: Added the target file path so agents know what data to load
+    target_file_path: str
+    
     # The active plan broken down by the Manager Agent
     task_list: List[dict]
     

@@ -70,9 +70,16 @@ def export_final_report(df: pd.DataFrame, eda_stats: str, ai_text: str, chart_pa
     # Section 1: Raw EDA Statistics
     pdf.set_font("Helvetica", style="B", size=12)
     pdf.cell(200, 10, txt="1. Exploratory Data Analysis (EDA) Statistics", ln=1)
+    pdf.ln(3)
 
-    pdf.set_font("Courier", size=9)
-    pdf.multi_cell(0, 5, txt=eda_stats)
+    # ---> THE FIX: Force a highly reduced fixed-width font so the massive Anomaly table fits horizontally
+    pdf.set_font("Courier", size=6.5)
+    
+    # Clean rogue characters that break FPDF, but strictly preserve spaces and newlines
+    safe_eda = eda_stats.replace('"', '').replace('\u2018', "'").replace('\u2019', "'")
+    
+    # multi_cell natively prints the exact structure of Pandas .to_string() without you needing to loop
+    pdf.multi_cell(0, 3.5, txt=safe_eda)
     pdf.ln(5)
 
     # Section 2: AI Analysis — now properly cleaned before rendering
@@ -85,7 +92,11 @@ def export_final_report(df: pd.DataFrame, eda_stats: str, ai_text: str, chart_pa
     # Render paragraph-by-paragraph so blank lines create actual visual spacing
     for paragraph in clean_text.split("\n\n"):
         if paragraph.strip():
-            pdf.multi_cell(0, 7, txt=paragraph.strip())
+            # 1. Apply the safe replacements to the CURRENT paragraph
+            safe_text = paragraph.strip().replace('\u2019', "'").replace('\u2018', "'").replace('\u201c', '"').replace('\u201d', '"').replace('\u2014', '-')
+            
+            # 2. Hand the cleaned, safe text directly to the PDF writer
+            pdf.multi_cell(0, 7, txt=safe_text)
             pdf.ln(3)
 
     # --- PAGE 2+: VISUAL EVIDENCE ---

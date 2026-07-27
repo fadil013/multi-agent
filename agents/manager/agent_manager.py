@@ -7,13 +7,18 @@ Owner: Danish (Agent Architecture)"""
 
 import json
 import os
+
+# ---> FIX: Load environment variables immediately after core imports
+from dotenv import load_dotenv
+load_dotenv()
+
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.manager.memory import ProjectState
 from agents.manager.planner import get_manager_prompt
 
-# Explicitly fetch the key
+# Explicitly fetch the key (now guaranteed to not be None)
 api_key = os.getenv("GOOGLE_API_KEY")
 
 llm = ChatGoogleGenerativeAI(

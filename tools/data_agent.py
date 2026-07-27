@@ -141,3 +141,45 @@ def generate_eda_summary(df: pd.DataFrame) -> str:
     summary.append(stats_df.to_string())
 
     return "\n".join(summary)
+
+
+def format_anomaly_table_for_pdf(anomalies_df: pd.DataFrame, max_rows: int = 5) -> str:
+    """
+    Formats an anomaly-flagged DataFrame into a clean, PDF-safe string.
+
+    Selects only the most business-relevant columns instead of dumping all
+    14+ columns, which would force Pandas to hard-wrap rows mid-line and
+    render as broken garbage in a fixed-width PDF cell.
+    """
+    if anomalies_df.empty or "is_anomaly" not in anomalies_df.columns:
+        return "No anomalies detected."
+
+    flagged = anomalies_df[anomalies_df["is_anomaly"] == True]
+
+    if flagged.empty:
+        return "No anomalous rows to display."
+
+    # Preferred columns — adjust these to match your actual cleaned column
+    # names (post clean() normalization) if your schema differs.
+    preferred_cols = ["company", "typename", "cpu", "ram", "price", "is_anomaly"]
+    available_cols = [c for c in preferred_cols if c in flagged.columns]
+
+    # Fallback: if none of the preferred columns exist, take the first 5
+    # columns present plus is_anomaly, so the report still renders something.
+    if not available_cols:
+        available_cols = list(flagged.columns[:5])
+        if "is_anomaly" not in available_cols:
+            available_cols.append("is_anomaly")
+
+    subset = flagged[available_cols].head(max_rows)
+
+    # Safety net: disable Pandas's own width-based wrapping even though
+    # the column count is already small, so nothing gets cut mid-row.
+    with pd.option_context(
+        "display.width", None,
+        "display.max_columns", None,
+        "display.max_colwidth", 20,
+    ):
+        table_str = subset.to_string(index=False)
+
+    return table_str
