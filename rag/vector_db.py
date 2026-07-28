@@ -12,7 +12,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
 
-from document_loader import Chunk
+from rag.document_loader import Chunk
 
 _env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=_env_path)
@@ -44,8 +44,12 @@ class VectorDB:
         else:
             raise NotImplementedError(f"Backend '{backend}' not implemented yet — only 'pinecone' is supported")
 
-    def add(self, chunks: list[Chunk], embeddings: list[list[float]]) -> None:
-        """Store chunks together with their vectors."""
+    def add(self, chunks: list[Chunk], embeddings: list[list[float]], namespace: str = "") -> None:
+        """Store chunks together with their vectors.
+
+        namespace: logical partition within the index (e.g. "marketing",
+        "sales"). Defaults to "" (Pinecone's default namespace).
+        """
         if len(chunks) != len(embeddings):
             raise ValueError("chunks and embeddings must be the same length")
 
@@ -64,11 +68,18 @@ class VectorDB:
 
         batch_size = 100
         for start in range(0, len(vectors), batch_size):
-            self._index.upsert(vectors=vectors[start:start + batch_size])
+            self._index.upsert(vectors=vectors[start:start + batch_size], namespace=namespace)
 
-    def search(self, query_vector: list[float], k: int = 5) -> list[dict]:
-        """Return the k most similar chunks (with their sources)."""
-        results = self._index.query(vector=query_vector, top_k=k, include_metadata=True)
+    def search(self, query_vector: list[float], k: int = 5, namespace: str = "") -> list[dict]:
+        """Return the k most similar chunks (with their sources).
+
+        namespace: which logical partition to search within. Must match
+        the namespace used when the data was added, or no results will
+        be found even if the data exists elsewhere in the index.
+        """
+        results = self._index.query(
+            vector=query_vector, top_k=k, include_metadata=True, namespace=namespace
+        )
 
         return [
             {

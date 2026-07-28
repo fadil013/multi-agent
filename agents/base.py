@@ -12,11 +12,17 @@ from typing import Any
 
 @dataclass
 class AgentResult:
-    """Standard result object returned by every agent."""
+    """Standard result object returned by every agent.
+
+    `sources` holds one dict per cited source:
+      {"label": "sales_report.pdf (page 1)", "text": "<actual retrieved text>"}
+    This lets downstream consumers (e.g. VerificationAgent) check claims
+    against real source text, not just a display label.
+    """
 
     agent: str
     output: Any
-    sources: list[str] = field(default_factory=list)
+    sources: list[dict] = field(default_factory=list)
     ok: bool = True
 
 
