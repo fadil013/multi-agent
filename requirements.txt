@@ -22,6 +22,8 @@ sentence-transformers
 tiktoken
 pypdf
 unstructured
+pinecone
+python-dotenv
 
 # ---- Data analysis ----
 pandas
