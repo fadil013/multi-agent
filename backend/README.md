@@ -3,7 +3,7 @@
 FastAPI backend that exposes AURA to the frontend.
 
 **Scope**
-- FastAPI application (`main.py`)
+- application (`main.py`)
 - Authentication (JWT)
 - Database models & migrations
 - API endpoints (goals, tasks, files, reports)

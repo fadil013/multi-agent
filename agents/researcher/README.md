@@ -7,4 +7,4 @@ Gathers live external intelligence.
 - Fact extraction
 - Source tracking (for citations)
 
-**Tools:** Search API, browser tools, RAG.
+**Tools:** Search API, browser tools, RAG etc.
