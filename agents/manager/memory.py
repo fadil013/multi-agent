@@ -1,33 +1,35 @@
 """Memory - short-term (current run) and long-term (vector store) memory.
-
 Owner: Danish  (long-term recall is backed by the RAG layer - coordinate with Manan)
 """
-from typing import TypedDict, List, Annotated
+from typing import TypedDict, List, Annotated, Optional
 import operator
+
 
 class ProjectState(TypedDict):
     """
-    This replaces the Memory class. LangGraph will pass this dictionary 
+    This replaces the Memory class. LangGraph will pass this dictionary
     to every agent in the workflow.
     """
-    # The original goal given by the user
     user_objective: str
-    
-    # ---> FIX: Added the target file path so agents know what data to load
-    target_file_path: str
-    
-    # The active plan broken down by the Manager Agent
     task_list: List[dict]
-    
-    # This replaces your self._short_term list and self.remember() method!
-    # 'Annotated' and 'operator.add' tell LangGraph: "When an agent returns 
-    # new memory items, append them to this list, don't overwrite it."
     short_term_memory: Annotated[List[dict], operator.add]
-    
-    # A placeholder for the final output
     final_report: str
 
-# Note on Long-Term Memory (Recall):
-# You won't define a recall() method here. Instead, when an agent needs 
-# long-term memory, it will call a specialized Tool (built by Intern 3) 
-# that queries the VectorDB (built by Intern 2).
+    # --- Data source configuration ---
+    # "file": read from target_file_path (CSV/Excel).
+    # "database": read from the OLTP database, via either database_table
+    # (whole-table fetch) or database_query (custom SQL SELECT).
+    data_source: Optional[str]  # "file" | "database"
+    target_file_path: Optional[str]
+    database_table: Optional[str]
+    database_query: Optional[str]
+
+    # --- OLTP tracking ---
+    # job_id links every report generated in this run back to one
+    # AnalysisJob row. Created once by the Data Analyst Agent on its first
+    # task and persisted across subsequent tasks via LangGraph state.
+    job_id: Optional[int]
+
+    # --- Node status signaling ---
+    status: Optional[str]  # "success" | "error" | None (not yet run)
+    retry_count: Optional[int]

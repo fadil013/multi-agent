@@ -5,6 +5,7 @@ Owner: Ahmad / Danish
 """
 from __future__ import annotations
 import pandas as pd
+import numpy as np
 import os
 import re
 from sklearn.impute import KNNImputer
@@ -183,3 +184,53 @@ def format_anomaly_table_for_pdf(anomalies_df: pd.DataFrame, max_rows: int = 5) 
         table_str = subset.to_string(index=False)
 
     return table_str
+
+
+def build_schema_description(df: pd.DataFrame, max_columns: int = 50) -> tuple[str, list]:
+    """
+    Builds a compact column-name + dtype summary for the LLM prompt.
+
+    On wide datasets (e.g. enterprise tables with 100+ columns), showing
+    every column would flood the context window and push out the actual
+    EDA statistics. Above `max_columns`, caps the description to:
+      - the highest-variance numeric columns (most likely to be analytically interesting)
+      - a bounded sample of categorical columns
+
+    Returns (description_string, list_of_columns_shown) — the column list
+    is used downstream to validate the LLM's chart config against exactly
+    what it was told exists, not the full (possibly unseen) schema.
+    """
+    all_columns = list(df.columns)
+
+    if len(all_columns) <= max_columns:
+        selected = all_columns
+    else:
+        numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+        categorical_cols = [c for c in all_columns if c not in numeric_cols]
+
+        if numeric_cols:
+            variances = df[numeric_cols].var(numeric_only=True).sort_values(ascending=False)
+            top_numeric = variances.index.tolist()[: max_columns // 2]
+        else:
+            top_numeric = []
+
+        remaining_budget = max_columns - len(top_numeric)
+        if len(categorical_cols) <= remaining_budget:
+            cat_sample = categorical_cols
+        else:
+            rng = np.random.default_rng(seed=42)  # deterministic sampling for reproducibility
+            cat_sample = list(rng.choice(categorical_cols, size=remaining_budget, replace=False))
+
+        selected = top_numeric + cat_sample
+        print(
+            f"[Warning] Dataset has {len(all_columns)} columns; capped schema "
+            f"description to {len(selected)} (top-variance numeric + sampled categorical)."
+        )
+
+    lines = [f"Available columns (showing {len(selected)} of {len(all_columns)} total):"]
+    for col in selected:
+        dtype = str(df[col].dtype)
+        kind = "numeric" if df[col].dtype.kind in "iuf" else "categorical/text"
+        lines.append(f"- {col}: {dtype} ({kind})")
+
+    return "\n".join(lines), selected

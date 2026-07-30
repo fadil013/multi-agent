@@ -19,27 +19,18 @@ def clean_text_for_pdf(text: str) -> str:
         return ""
 
     cleaned = text
-
-    # Remove markdown emphasis/heading symbols
     cleaned = re.sub(r'[*#`]', '', cleaned)
-
-    # Remove leading bullet dashes at the start of lines (keep the text after them)
     cleaned = re.sub(r'(?m)^\s*[-•]\s*', '', cleaned)
 
-    # If the model wrapped the whole thing in a JSON object despite instructions,
-    # try to detect and unwrap it rather than printing raw braces.
     stripped = cleaned.strip()
     if stripped.startswith('{') and stripped.endswith('}'):
         try:
             parsed = json.loads(stripped)
             if isinstance(parsed, dict):
-                # Flatten values into prose, dropping keys/braces/quotes
                 cleaned = "\n\n".join(str(v) for v in parsed.values())
         except json.JSONDecodeError:
-            # Not actually valid JSON — just strip stray braces/quotes as a fallback
             cleaned = re.sub(r'[{}"]', '', cleaned)
 
-    # Collapse excessive blank lines but preserve paragraph breaks
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     cleaned = cleaned.strip()
 
@@ -47,59 +38,56 @@ def clean_text_for_pdf(text: str) -> str:
 
 
 def export_final_report(df: pd.DataFrame, eda_stats: str, ai_text: str, chart_paths: list, output_dir: str = "output") -> dict:
-    """Packages the analysis, stats, and multiple charts into a PDF."""
+    """Packages the analysis, stats, and multiple charts into a PDF.
+
+    output_dir should be a unique folder per task/run (e.g. "output/task_1")
+    when this is called multiple times in one program invocation — otherwise
+    each call overwrites the previous one's PDF/CSV under the same filenames.
+    """
     os.makedirs(output_dir, exist_ok=True)
     paths = {}
 
-    # 1. Raw Cleaned Data -> CSV
     csv_path = os.path.join(output_dir, "1_cleaned_data.csv")
     df.to_csv(csv_path, index=False)
     paths["CSV"] = csv_path
 
-    # 2. Main Report -> PDF
     pdf_path = os.path.join(output_dir, "2_executive_report.pdf")
     pdf = FPDF()
 
-    # --- PAGE 1: TEXT AND STATS ---
     pdf.add_page()
 
     pdf.set_font("Helvetica", style="B", size=16)
     pdf.cell(200, 10, txt="AURA Executive Data & EDA Report", ln=1, align='C')
     pdf.ln(5)
 
-    # Section 1: Raw EDA Statistics
     pdf.set_font("Helvetica", style="B", size=12)
     pdf.cell(200, 10, txt="1. Exploratory Data Analysis (EDA) Statistics", ln=1)
     pdf.ln(3)
 
-    # ---> THE FIX: Force a highly reduced fixed-width font so the massive Anomaly table fits horizontally
     pdf.set_font("Courier", size=6.5)
-    
-    # Clean rogue characters that break FPDF, but strictly preserve spaces and newlines
     safe_eda = eda_stats.replace('"', '').replace('\u2018', "'").replace('\u2019', "'")
-    
-    # multi_cell natively prints the exact structure of Pandas .to_string() without you needing to loop
     pdf.multi_cell(0, 3.5, txt=safe_eda)
     pdf.ln(5)
 
-    # Section 2: AI Analysis — now properly cleaned before rendering
     pdf.set_font("Helvetica", style="B", size=12)
     pdf.cell(200, 10, txt="2. Executive Business Insight", ln=1)
 
     clean_text = clean_text_for_pdf(ai_text)
     pdf.set_font("Helvetica", size=11)
 
-    # Render paragraph-by-paragraph so blank lines create actual visual spacing
     for paragraph in clean_text.split("\n\n"):
         if paragraph.strip():
-            # 1. Apply the safe replacements to the CURRENT paragraph
-            safe_text = paragraph.strip().replace('\u2019', "'").replace('\u2018', "'").replace('\u201c', '"').replace('\u201d', '"').replace('\u2014', '-')
-            
-            # 2. Hand the cleaned, safe text directly to the PDF writer
+            safe_text = (
+                paragraph.strip()
+                .replace('\u2019', "'")
+                .replace('\u2018', "'")
+                .replace('\u201c', '"')
+                .replace('\u201d', '"')
+                .replace('\u2014', '-')
+            )
             pdf.multi_cell(0, 7, txt=safe_text)
             pdf.ln(3)
 
-    # --- PAGE 2+: VISUAL EVIDENCE ---
     pdf.add_page()
     pdf.set_font("Helvetica", style="B", size=14)
     pdf.cell(200, 10, txt="3. Visual Evidence & Plots", ln=1)
@@ -129,9 +117,10 @@ def export_json_report(
     output_dir: str = "output"
 ) -> dict:
     """
-    Exports a structured JSON version of the report — useful for programmatic
-    consumption (e.g. by the Manager Agent, Verification Agent, or frontend)
-    instead of parsing the PDF or free-text finding string.
+    Exports a structured JSON version of the report.
+
+    output_dir should match the same unique folder used in export_final_report
+    for the same task, so the PDF/CSV/JSON/charts for one task stay grouped together.
     """
     os.makedirs(output_dir, exist_ok=True)
     json_path = os.path.join(output_dir, "3_report_summary.json")

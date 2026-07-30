@@ -93,7 +93,6 @@ temp/
 *.tmp
 
 # ---- Tools & Agents I don't want to push yet ----
-tools/database_tool.py
 tools/search_tool.py
 agents/researcher/
 
@@ -101,7 +100,3 @@ agents/researcher/
 output/
 uploads/
 data/uploads/
-sales.csv
-*.csv
-*.pdf
-*.png

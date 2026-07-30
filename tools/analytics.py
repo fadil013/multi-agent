@@ -1,95 +1,205 @@
-"""Analytics tool - pattern detection and chart generation."""
+"""Analytics tool - pattern detection and dynamic chart generation.
+
+Owner: Danish
+"""
 from __future__ import annotations
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import os
 
 
-def make_chart(df: pd.DataFrame, kind: str = "histogram", x_col: str = None, y_col: str = None, path: str = "chart.png") -> str:
-    """Generate a chart and return the saved file path."""
-    if df.empty:
-        raise ValueError("Cannot generate chart: DataFrame is empty.")
+def generate_dynamic_charts(df: pd.DataFrame, chart_configs: list, output_dir: str = "output") -> list:
+    """
+    Takes a JSON list of chart configurations from an LLM and renders highly
+    readable, styled PNGs.
 
-    plot_df = df.copy()
+    output_dir should be a unique folder per task/run (e.g. "output/task_1")
+    when this is called multiple times in one program invocation — otherwise
+    chart PNGs from one task (e.g. plot_1_scatter.png) get overwritten by
+    the next task's charts using the same filename pattern.
 
-    # Automatically drop garbage index columns (like 'unnamed_0' or 'id')
-    garbage_cols = [c for c in plot_df.columns if 'unnamed' in str(c).lower() or str(c).lower() == 'id']
-    plot_df = plot_df.drop(columns=garbage_cols)
+    Supported chart_types and their required config fields:
 
-    text_cols = plot_df.select_dtypes(include=['object', 'string']).columns.tolist()
-    numeric_cols = plot_df.select_dtypes(include=['number']).columns.tolist()
+    - "scatter": requires x_column, y_column. Optional hue (grouping column).
+    - "histogram": requires column. Distribution of a single numeric column.
+    - "bar": requires x_column, y_column. Optional aggregation
+      ("mean" | "sum" | "median" | "count" | "min" | "max"), defaults to "mean".
+      Categories are capped to the top 15 by aggregated value for readability.
+    - "line": requires y_column. x_column is optional — if the DataFrame has
+      a datetime column, it's preferred automatically for the x-axis over
+      whatever x_column was given. Falls back to the provided x_column if
+      no datetime column exists.
+    - "box": either a single `column` (simple distribution/outlier box plot),
+      or `x_column` + `y_column` for a grouped box plot. Optional hue for a
+      further sub-grouping within a grouped box plot.
+    - "heatmap": no column fields required — automatically uses ALL numeric
+      columns in the DataFrame to build a correlation matrix.
+    - "countplot": requires `column` (categorical). Shows frequency counts.
+      Optional hue for a grouped/stacked count comparison. Capped to top 15
+      categories by frequency.
 
-    if len(numeric_cols) == 0:
-        raise ValueError("No numeric columns available to plot.")
+    On any missing/invalid column reference, a warning is printed and that
+    specific chart is skipped — the rest of the chart_configs list still
+    processes normally.
+    """
+    if df.empty or not chart_configs:
+        return []
 
-    # Heatmap specifically needs at least 2 numeric columns to build a correlation matrix
-    if kind == "heatmap" and len(numeric_cols) < 2:
-        raise ValueError(
-            f"Cannot generate heatmap: need at least 2 numeric columns, found {len(numeric_cols)}."
-        )
+    os.makedirs(output_dir, exist_ok=True)
+    chart_paths = []
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    plt.style.use('ggplot')
+    sns.set_theme(context="talk", style="whitegrid")
 
-    # --- SMART PLOTTING LOGIC ---
-    if kind in ["hist", "histogram"]:
-        # Histogram should only plot ONE variable to prevent scale squashing.
-        # If x_col isn't specified, intelligently default to the LAST numeric column
-        target = x_col if x_col and x_col in numeric_cols else numeric_cols[-1]
+    for i, config in enumerate(chart_configs):
+        chart_type = config.get("chart_type", "").lower()
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
 
-        plot_df[target].plot(kind='hist', bins=20, alpha=0.7, ax=ax, color='#2c3e50')
-        ax.set_xlabel(target.capitalize())
-        plt.title(f"Distribution of {target.capitalize()}")
+        try:
+            if chart_type == "scatter":
+                x_col = config["x_column"]
+                y_col = config["y_column"]
+                hue_col = config.get("hue")
 
-    elif kind == "scatter":
-        # Scatter needs exactly 2 variables
-        x = x_col if x_col and x_col in numeric_cols else numeric_cols[0]
-        y = y_col if y_col and y_col in numeric_cols else numeric_cols[-1]
+                if hue_col and hue_col in df.columns:
+                    sns.scatterplot(data=df, x=x_col, y=y_col, hue=hue_col, ax=ax, alpha=0.7)
+                    ax.legend(loc="best", fontsize="small", title_fontsize="small")
+                else:
+                    sns.scatterplot(data=df, x=x_col, y=y_col, ax=ax, color="#E24A33", alpha=0.7)
 
-        # Prevent plotting a variable against itself if not specified
-        if x == y and len(numeric_cols) > 1:
-            y = numeric_cols[1]
+            elif chart_type == "histogram":
+                col = config["column"]
+                sns.histplot(data=df, x=col, ax=ax, color="#348ABD", kde=True)
 
-        plot_df.plot(kind='scatter', x=x, y=y, ax=ax, s=60, alpha=0.7, color='#e74c3c')
-        plt.title(f"Scatter: {x.capitalize()} vs {y.capitalize()}")
+            elif chart_type == "bar":
+                x_col = config["x_column"]
+                y_col = config["y_column"]
+                agg_method = config.get("aggregation", "mean").lower()
+                if agg_method not in ("mean", "sum", "median", "count", "min", "max"):
+                    print(f"[Warning] Unsupported aggregation '{agg_method}' in Chart {i+1}, defaulting to mean.")
+                    agg_method = "mean"
 
-    elif kind == "heatmap":
-        # Generates a visual correlation matrix
-        corr = plot_df[numeric_cols].corr()
-        cax = ax.matshow(corr, cmap='coolwarm', vmin=-1, vmax=1)
-        fig.colorbar(cax)
+                agg_df = df.groupby(x_col)[y_col].agg(agg_method).reset_index()
+                agg_df = agg_df.sort_values(by=y_col, ascending=False).head(15)
 
-        # Fix the labels for the heatmap
-        ax.set_xticks(range(len(corr.columns)))
-        ax.set_yticks(range(len(corr.columns)))
-        ax.set_xticklabels(corr.columns, rotation=45, ha='left')
-        ax.set_yticklabels(corr.columns)
-        plt.title("Correlation Heatmap", pad=20)
+                sns.barplot(data=agg_df, x=x_col, y=y_col, ax=ax, color="#988ED5")
+                plt.xticks(rotation=45, ha='right')
 
-    else:  # Default Bar or Line
-        # Use a text column for the X-axis labels to make it readable
-        if x_col and x_col in text_cols:
-            plot_df = plot_df.set_index(x_col)
-        elif len(text_cols) > 0:
-            plot_df = plot_df.set_index(text_cols[0])
+            elif chart_type == "line":
+                y_col = config["y_column"]
 
-        # Target specific Y columns, or plot all remaining numeric if none specified
-        y = [y_col] if y_col and y_col in numeric_cols else numeric_cols
+                datetime_cols = df.select_dtypes(include=["datetime", "datetimetz"]).columns.tolist()
 
-        if kind == "bar":
-            plot_df[y].head(15).plot(kind='bar', ax=ax)
-        else:
-            plot_df[y].plot(kind='line', marker='o', ax=ax)
-        plt.title(f"Data Insight: {kind.capitalize()} Chart")
+                if datetime_cols:
+                    x_col = datetime_cols[0]
+                    if config.get("x_column") and config["x_column"] != x_col:
+                        print(
+                            f"[Info] Chart {i+1} ('line'): using detected datetime column "
+                            f"'{x_col}' instead of requested x_column '{config['x_column']}'."
+                        )
+                else:
+                    x_col = config.get("x_column")
+                    if not x_col:
+                        print(f"[Warning] Chart {i+1} ('line'): no datetime column found and no x_column provided — skipping.")
+                        plt.close(fig)
+                        continue
 
-    plt.tight_layout()
+                if x_col not in df.columns or y_col not in df.columns:
+                    print(f"[Warning] Chart {i+1} ('line'): column(s) not found — skipping.")
+                    plt.close(fig)
+                    continue
 
-    # Save the file safely
-    save_dir = os.path.dirname(path)
-    if save_dir:
-        os.makedirs(save_dir, exist_ok=True)
+                plot_df = df[[x_col, y_col]].dropna().sort_values(by=x_col)
+                sns.lineplot(data=plot_df, x=x_col, y=y_col, ax=ax, marker="o", color="#2C3E50")
+                if plot_df[x_col].dtype.kind not in "iuf":
+                    plt.xticks(rotation=45, ha='right')
 
-    absolute_path = os.path.abspath(path)
-    plt.savefig(absolute_path)
-    plt.close()
+            elif chart_type == "box":
+                x_col = config.get("x_column")
+                y_col = config.get("y_column")
+                single_col = config.get("column")
+                hue_col = config.get("hue")
 
-    return absolute_path
+                if x_col and y_col:
+                    if x_col not in df.columns or y_col not in df.columns:
+                        print(f"[Warning] Chart {i+1} ('box'): column(s) not found — skipping.")
+                        plt.close(fig)
+                        continue
+
+                    if hue_col and hue_col in df.columns:
+                        sns.boxplot(data=df, x=x_col, y=y_col, hue=hue_col, ax=ax)
+                        ax.legend(loc="best", fontsize="small", title_fontsize="small")
+                    else:
+                        sns.boxplot(data=df, x=x_col, y=y_col, ax=ax, color="#59A14F")
+                    plt.xticks(rotation=45, ha='right')
+
+                elif single_col:
+                    if single_col not in df.columns:
+                        print(f"[Warning] Chart {i+1} ('box'): column '{single_col}' not found — skipping.")
+                        plt.close(fig)
+                        continue
+                    sns.boxplot(data=df, y=single_col, ax=ax, color="#59A14F")
+
+                else:
+                    print(f"[Warning] Chart {i+1} ('box'): needs either 'column', or both 'x_column' and 'y_column' — skipping.")
+                    plt.close(fig)
+                    continue
+
+            elif chart_type == "heatmap":
+                numeric_df = df.select_dtypes(include=["number"])
+
+                if numeric_df.shape[1] < 2:
+                    print(f"[Warning] Chart {i+1} ('heatmap'): need at least 2 numeric columns, found {numeric_df.shape[1]} — skipping.")
+                    plt.close(fig)
+                    continue
+
+                corr = numeric_df.corr()
+                sns.heatmap(
+                    corr, annot=True, fmt=".2f", cmap="coolwarm",
+                    vmin=-1, vmax=1, ax=ax, square=True,
+                    annot_kws={"size": 8}, cbar_kws={"shrink": 0.8}
+                )
+                plt.xticks(rotation=45, ha='right')
+                plt.yticks(rotation=0)
+
+            elif chart_type == "countplot":
+                col = config.get("column")
+                hue_col = config.get("hue")
+
+                if not col or col not in df.columns:
+                    print(f"[Warning] Chart {i+1} ('countplot'): column '{col}' not found — skipping.")
+                    plt.close(fig)
+                    continue
+
+                top_categories = df[col].value_counts().head(15).index
+                plot_df = df[df[col].isin(top_categories)]
+
+                if hue_col and hue_col in df.columns:
+                    sns.countplot(data=plot_df, x=col, hue=hue_col, ax=ax, order=top_categories)
+                    ax.legend(loc="best", fontsize="small", title_fontsize="small")
+                else:
+                    sns.countplot(data=plot_df, x=col, ax=ax, color="#E8A33D", order=top_categories)
+
+                plt.xticks(rotation=45, ha='right')
+
+            else:
+                print(f"[Warning] Unsupported chart type requested: {chart_type}")
+                plt.close(fig)
+                continue
+
+            ax.set_title(config.get("title", f"Chart {i+1}"), pad=15, fontweight='bold')
+            plt.tight_layout()
+
+            filepath = os.path.join(output_dir, f"plot_{i+1}_{chart_type}.png")
+            fig.savefig(filepath)
+            chart_paths.append(filepath)
+
+        except KeyError as e:
+            print(f"[Warning] Chart {i+1} missing required field: {e}")
+        except Exception as e:
+            print(f"[Error] Failed to render Chart {i+1}: {e}")
+        finally:
+            plt.close(fig)
+
+    return chart_paths

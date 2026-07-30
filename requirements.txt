@@ -1,67 +1,39 @@
 # ============================================================
 #  AURA — Python Dependencies
-#  Pin exact versions once the stack is finalized.
+#  Scoped to: Manager Agent + Data Analyst Agent (current build).
+#  Add packages back as new agents/features are actually implemented.
 # ============================================================
 
 # ---- Agent orchestration ----
-langgraph
-langchain
-langchain-community
-langchain-openai
-crewai
-# autogen-agentchat        # optional alternative to CrewAI
+langgraph==0.2.62
+langchain-core==0.3.29
 
 # ---- LLM providers ----
-openai
-anthropic
-langchain-groq             # Added for Llama 3.3 support
-langchain-google-genai     # Added for Gemini support
+langchain-groq==0.2.3          # Llama 3.3 (Data Analyst Agent)
+langchain-google-genai==2.0.9  # Gemini (Manager Agent)
 
-# ---- RAG / Knowledge ----
-chromadb
-faiss-cpu
-sentence-transformers
-tiktoken
-pypdf
-unstructured
+# ---- Structured output ----
+pydantic==2.10.5
 
 # ---- Data analysis & ML ----
-pandas
-numpy
-openpyxl                    # Excel support
-matplotlib
-plotly
-scikit-learn               # Added for KNN Imputation & Isolation Forest
-prophet                    # Added for Time-Series Forecasting
+pandas==2.2.3
+numpy==1.26.4
+openpyxl==3.1.5
+matplotlib==3.10.0
+seaborn==0.13.2
+scikit-learn==1.6.1           # KNN Imputation & Isolation Forest
 
-# ---- Web research ----
-tavily-python
-requests
-beautifulsoup4
-
-# ---- Backend ----
-fastapi
-uvicorn[standard]
-pydantic
-pydantic-settings
-sqlalchemy
-psycopg2-binary
-redis
-python-jose[cryptography]   # JWT auth
-passlib[bcrypt]
-python-multipart            # file uploads
+# ---- Database (OLTP) ----
+sqlalchemy==2.0.37
+psycopg2-binary==2.9.10       # for PostgreSQL; sqlite3 is stdlib, no package needed
 
 # ---- Reporting ----
-reportlab                   # PDF generation
-fpdf2                      # Added for current Reporter engine
-jinja2
+fpdf2==2.8.2
 
-# ---- MLOps ----
-mlflow
-python-dotenv              # Handles local API keys
+# ---- Config ----
+python-dotenv==1.0.1
 
 # ---- Dev / testing ----
-pytest
-pytest-asyncio
-black
-ruff
+pytest==8.3.4
+black==24.10.0
+ruff==0.9.2
