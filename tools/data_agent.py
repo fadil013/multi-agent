@@ -2,8 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 
-from analytics import compute_summary_stats, generate_charts
-
 
 def available_input_files(folder: str = ".") -> list:
     files = []
@@ -121,6 +119,11 @@ def clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
 
 
 def analyze(file_path: str) -> dict:
+    try:
+        from tools.analytics import compute_summary_stats, generate_charts
+    except ImportError:  # pragma: no cover - supports running this file from tools/
+        from analytics import compute_summary_stats, generate_charts
+
     df = load_file(file_path)
     df, structure = clean_data(df)
     summary = compute_summary_stats(df, structure)
